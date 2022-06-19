@@ -1,0 +1,373 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Star Navi Task API",
+    "description": "API from Star Navi Test Task by Maksym Kulikov",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "basicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      },
+      "tokenAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key"
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "Post": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "created_by": {
+            "type": "string"
+          }
+        }
+      },
+      "PostResponse": {
+        "type": "object",
+        "properties": {
+          "bookRequest": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Post"
+            }
+          }
+        }
+      },
+      "uuid": {
+        "properties": {
+          "uuid": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "basicAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Posts",
+      "description": "Posts API"
+    }
+  ],
+  "paths": {
+    "/signup": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Creates User",
+        "requestBody": {
+          "description": "User Signup Post Object",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          }
+        },
+        "parameters": [
+        ],
+        "responses": {
+          "201": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/uuid"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "User with such username or email exists. Please, try again."
+          }
+        }
+      }
+    },
+    "/login": {
+      "get": {
+        "summary": "If not logged in, sends auth form. Returns JWT-token.",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. Please, check your username and password."
+          }
+        }
+      }
+    },
+    "/posts": {
+      "get": {
+        "tags": [
+          "Posts"
+        ],
+        "security": [
+          {
+            "tokenAuth": []
+          }
+        ],
+        "summary": "Returns a list of posts.",
+        "description": "Returns all posts from database.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Posts"
+        ],
+        "security": [
+          {
+            "tokenAuth": []
+          }
+        ],
+        "summary": "Creates Post",
+        "description": "Creates Post",
+        "requestBody": {
+          "description": "Post Creation Object",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/logout": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "User Logout",
+        "description": "Logout",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/posts/{uuid}": {
+      "get": {
+        "tags": [
+          "Posts"
+        ],
+        "security": [
+          {
+            "tokenAuth": []
+          }
+        ],
+        "summary": "Returns one post based on UUID passed",
+        "description": "Returns one post from database, selected on uuid",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "uuid",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Post"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Post not found. Check UUID."
+          }
+        }
+      }
+    },
+    "/posts/{uuid}/like": {
+      "post": {
+        "tags": [
+          "Posts"
+        ],
+        "security": [
+          {
+            "tokenAuth": []
+          }
+        ],
+        "summary": "Creates Like on selected post based on post UUID",
+        "description": "",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "uuid",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/uuid"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "OK"
+          },
+          "403": {
+            "description": "You already liked this post"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Posts"
+        ],
+        "security": [
+          {
+            "tokenAuth": []
+          }
+        ],
+        "summary": "Unlikes Post",
+        "description": "Post Unlike",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "uuid",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          }
+        }
+      }
+    },
+    "/analytics": {
+      "get": {
+        "tags": [
+          "Posts"
+        ],
+        "security": [
+          {
+            "tokenAuth": []
+          }
+        ],
+        "summary": "Returns analytics of likes made aggregated by date",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "date_from",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_to",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {}
+          }
+        },
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/user-activity": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "tokenAuth": []
+          }
+        ],
+        "summary": "Returns timestamp where logged in user was last time logged in and when user made last request",
+        "description": "",
+        "parameters": [ ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  }
+}
